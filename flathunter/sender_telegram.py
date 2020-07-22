@@ -13,7 +13,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from flathunter.abstract_processor import Processor
 from flathunter.idmaintainer import IdMaintainer
 
+from enum import Enum
 import ipdb
+
+class Action(Enum):
+    PICS=0,
+    APPLY=1
 
 class SenderTelegram(Processor):
     """Expose processor that sends Telegram messages"""
@@ -38,7 +43,9 @@ class SenderTelegram(Processor):
     def button(self, update, context):
         query = update.callback_query
         chat_id = update.callback_query.message.chat_id
-        # ipdb.set_trace()
+
+        # if query.data[0] == Action.PICS:
+            # ipdb.set_trace()
         try:
             # ipdb.set_trace()    
             expose = self.id_watch.get_expose_by_id(query.data)
@@ -62,6 +69,9 @@ class SenderTelegram(Processor):
         except Exception as e:
             self.__log__.error(e)
             self.bot.answer_callback_query(update.callback_query.id, text='Sorry, I dont have pics for this one')
+
+        # elif query.data[0] == Action.APPLY:
+
 
     def error(self, update, context):
         """
@@ -98,8 +108,9 @@ class SenderTelegram(Processor):
             # self.__log__.debug(('text', text))
             reply_markup = None
             if expose is not None and len(expose['photos']) > 0:
-                pics_button = InlineKeyboardButton("show pics", callback_data=expose['id'])
-                keyboard = [[pics_button]]
+                pics_button = InlineKeyboardButton("🌇 show pics", callback_data=expose['id'])
+                apply_button = InlineKeyboardButton(text="🎈 apply", url=expose['url']+"#/basicContact/email")
+                keyboard = [[pics_button, apply_button]]
                 reply_markup = InlineKeyboardMarkup(keyboard,one_time_keyboard=True)
                 self.bot.send_photo(chat_id=chat_id, photo=expose['photos'][0],
                                     reply_markup=reply_markup, caption=message)
