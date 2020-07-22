@@ -40,7 +40,7 @@ class AlreadySeenFilter:
 
 class IdMaintainer:
     """SQLite back-end for the database"""
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def __init__(self, db_name):
         self.db_name = db_name

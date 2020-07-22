@@ -1,3 +1,7 @@
+---
+# Enable verbose mode (print DEBUG log messages)
+# verbose: true
+
 # Should the bot endlessly looop through the URLs?
 # Between each loop it waits for <sleeping_time> seconds.
 loop:

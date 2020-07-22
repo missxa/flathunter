@@ -9,7 +9,7 @@ from flathunter.abstract_crawler import Crawler
 class CrawlWgGesucht(Crawler):
     """Implementation of Crawler interface for WgGesucht"""
 
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
     URL_PATTERN = re.compile(r'https://www\.wg-gesucht\.de')
 
     def __init__(self):

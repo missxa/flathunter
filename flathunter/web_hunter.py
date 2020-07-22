@@ -10,7 +10,7 @@ class WebHunter(Hunter):
        all sites and save them to the database. Includes support for multiple users
        with individual filters implemented in-app"""
 
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def hunt_flats(self, max_pages=1):
         """Crawl all URLs, and send notifications to users of new flats"""

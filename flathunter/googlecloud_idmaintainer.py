@@ -10,7 +10,7 @@ from flathunter.config import Config
 
 class GoogleCloudIdMaintainer:
     """Storage back-end - implementation of IdMaintainer API"""
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def __init__(self):
         project_id = Config().get('google_cloud_project_id')

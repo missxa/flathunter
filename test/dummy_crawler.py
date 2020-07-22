@@ -8,7 +8,7 @@ from random import choice
 from flathunter.abstract_crawler import Crawler
 
 class DummyCrawler(Crawler):
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
     URL_PATTERN = re.compile(r'https://www\.example\.com')
 
     def __init__(self, titlewords=[ "wg", "tausch", "flat", "ruhig", "gruen" ], addresses_as_links=False):

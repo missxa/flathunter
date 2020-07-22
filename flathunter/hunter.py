@@ -8,7 +8,7 @@ from flathunter.processor import ProcessorChain
 
 class Hunter:
     """Hunter class - basic methods for crawling and processing / filtering exposes"""
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def __init__(self, config, id_watch):
         self.config = config

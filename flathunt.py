@@ -35,7 +35,7 @@ logging.basicConfig(
     format=LOG_FORMAT,
     datefmt='%Y/%m/%d %H:%M:%S',
     level=logging.INFO)
-__log__ = logging.getLogger(__name__)
+__log__ = logging.getLogger('flathunt')
 
 
 def launch_flat_hunt(config):

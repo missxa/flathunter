@@ -14,7 +14,7 @@ class GMapsDurationProcessor(Processor):
     GM_MODE_BICYCLE = 'bicycling'
     GM_MODE_DRIVING = 'driving'
 
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def __init__(self, config):
         self.config = config

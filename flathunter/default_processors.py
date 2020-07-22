@@ -16,7 +16,7 @@ class Filter(Processor):
 
 class AddressResolver(Processor):
     """Processor to extract apartment addresses from expose links"""
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
 
     def __init__(self, config):
         self.config = config

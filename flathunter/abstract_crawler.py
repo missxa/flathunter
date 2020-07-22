@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 class Crawler:
     """Defines the Crawler interface"""
 
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
     URL_PATTERN = None
 
     # pylint: disable=unused-argument

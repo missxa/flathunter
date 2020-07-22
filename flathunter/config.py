@@ -12,7 +12,7 @@ from flathunter.filter import Filter
 class Config:
     """Class to represent flathunter configuration"""
 
-    __log__ = logging.getLogger(__name__)
+    __log__ = logging.getLogger('flathunt')
     __searchers__ = [CrawlImmobilienscout(),
                      CrawlWgGesucht(),
                      CrawlEbayKleinanzeigen(),
