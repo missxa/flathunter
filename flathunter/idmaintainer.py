@@ -90,16 +90,33 @@ class IdMaintainer:
                      expose['crawler'], json.dumps(expose)))
         self.get_connection().commit()
 
-    def get_exposes_since(self, min_datetime):
-        """Loads all exposes since the specified date"""
-        def row_to_expose(row):
+    
+    @staticmethod
+    def row_to_expose(row):
             obj = json.loads(row[2])
             obj['created_at'] = row[0]
             return obj
+
+    def get_expose_by_id(self, id):
+        cur = self.get_connection().cursor()
+        cur.execute('SELECT details FROM exposes \
+                     WHERE id == ?', (id,))
+        # import ipdb; ipdb.set_trace()
+        res = cur.fetchall()
+        assert len(res) == 1
+        return json.loads(res[0][0])
+        
+
+    def get_exposes_since(self, min_datetime):
+        """Loads all exposes since the specified date"""
+        # def row_to_expose(row):
+        #     obj = json.loads(row[2])
+        #     obj['created_at'] = row[0]
+        #     return obj
         cur = self.get_connection().cursor()
         cur.execute('SELECT created, crawler, details FROM exposes \
                      WHERE created >= ? ORDER BY created DESC', (min_datetime,))
-        return list(map(row_to_expose, cur.fetchall()))
+        return list(map(self.row_to_expose, cur.fetchall()))        
 
     def get_recent_exposes(self, count, filter_set=None):
         """Returns up to 'count' recent exposes, filtered by the provided filter"""

@@ -3,6 +3,8 @@ import logging
 import re
 import datetime
 
+import ipdb
+
 from flathunter.abstract_crawler import Crawler
 
 class CrawlImmobilienscout(Crawler):
@@ -10,7 +12,7 @@ class CrawlImmobilienscout(Crawler):
 
     __log__ = logging.getLogger(__name__)
     URL_PATTERN = re.compile(r'https://www\.immobilienscout24\.de')
-    RESULT_LIMIT = 50
+    RESULT_LIMIT = 1
 
     def __init__(self):
         logging.getLogger("requests").setLevel(logging.WARNING)
@@ -55,6 +57,7 @@ class CrawlImmobilienscout(Crawler):
             if cur_entry is list():
                 break
             entries.extend(cur_entry)
+            break
         return entries
 
     def get_page(self, search_url, page_no=None):
@@ -97,12 +100,26 @@ class CrawlImmobilienscout(Crawler):
                                                  'result-list-entry__address' in e['class'])
         gallery_elements = soup.find_all(lambda e: e.has_attr('class') and \
                                          'result-list-entry__gallery-container' in e['class'])
+        first = True
         for idx, title_el in enumerate(title_elements):
+            # if first:
+            #     first = False
+            #     print(idx)
             attr_els = attr_container_els[idx].find_all('dd')
             try:
                 address = address_fields[idx].text.strip()
             except AttributeError:
                 address = "No address given"
+            # photos = []
+            # sp_images = gallery_elements[idx].find("div", {"class": "sp-image-container"})
+            # import ipdb; ipdb.set_trace()
+            # if sp_images is not None:
+            #     self.__log__.info("yay, images are not empty!")
+            #     it = sp_images.find("img")
+            #     img = it["src"]
+            #     self.__log__.info(img)
+            # else:
+            #     self.__log__.error("Not found")
 
             gallery_tag = gallery_elements[idx].find("div", {"class": "gallery-container"})
             if gallery_tag is not None:
@@ -113,15 +130,19 @@ class CrawlImmobilienscout(Crawler):
                     image = image_tag["data-lazy-src"]
             else:
                 image = None
-
+            image_urls, total_price, free_from = self.extract_details(expose_urls[idx])
             details = {
                 'id': expose_ids[idx],
                 'url': expose_urls[idx],
                 'image': image,
+                'photos': image_urls,
                 'title': title_el.text.strip().replace('NEU', ''),
+                'free_from': free_from,
+                'total_price': total_price,
                 'address': address,
                 'crawler': self.get_name()
             }
+            # ipdb.set_trace()
             if len(attr_els) > 2:
                 details['price'] = attr_els[0].text.strip().split(' ')[0].strip()
                 details['size'] = attr_els[1].text.strip().split(' ')[0].strip() + " qm"
@@ -139,6 +160,27 @@ class CrawlImmobilienscout(Crawler):
                     break
             if not exist:
                 entries.append(details)
+            # else:
+            #     print("skipping")
+            
 
-        self.__log__.debug('extracted: %d', entries)
+        # self.__log__.info('extracted: %d', entries)
         return entries
+
+    def extract_details(self, url):
+        self.__log__.info(f"searching {url}")
+        # ipdb.set_trace()
+        image_urls = []
+        soup = self.get_page(url)
+        image_tags = soup.find_all(lambda e: e.has_attr('class') and 'sp-image' in e['class'])
+        for t in image_tags:
+            try:
+                image_url = t['data-src'].split("/ORIG")[0]
+                image_urls.append(image_url)
+            except:
+                self.__log__.debug("cant get the image url")
+        total_price_tag = soup.find(lambda e: e.has_attr('class') and 'is24qa-gesamtmiete' in e['class'])
+        total_price = total_price_tag.text.strip()
+        
+        free_from = soup.find(lambda e: e.has_attr('class') and 'is24qa-bezugsfrei-ab' in e['class']).text.strip()
+        return image_urls, total_price, free_from
