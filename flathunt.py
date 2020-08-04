@@ -3,7 +3,7 @@
 """Flathunter - search for flats by crawling property portals, and receive telegram
    messages about them. This is the main command-line executable, for running on the
    console. To run as a webservice, look at main.py"""
-
+import sys
 import argparse
 import os
 import logging
@@ -34,7 +34,11 @@ else:
 logging.basicConfig(
     format=LOG_FORMAT,
     datefmt='%Y/%m/%d %H:%M:%S',
-    level=logging.INFO)
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler("flathunter.log"),
+        logging.StreamHandler()
+    ])
 __log__ = logging.getLogger('flathunt')
 
 
@@ -46,11 +50,15 @@ def launch_flat_hunt(config):
     hunter.hunt_flats()
 
     while config.get('loop', dict()).get('active', False):
+        # try:
         time.sleep(config.get('loop', dict()).get('sleeping_time', 60 * 10))
         hunter.hunt_flats()
+        # except:
+        #     sys.exit()
 
 
 def main():
+
     """Processes command-line arguments, loads the config, launches the flathunter"""
     parser = argparse.ArgumentParser(description=\
              "Searches for flats on Immobilienscout24.de and wg-gesucht.de and sends " + \

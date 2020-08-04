@@ -6,16 +6,18 @@ import datetime
 import ipdb
 
 from flathunter.abstract_crawler import Crawler
+from flathunter.idmaintainer import IdMaintainer
 
 class CrawlImmobilienscout(Crawler):
     """Implementation of Crawler interface for ImmobilienScout"""
 
     __log__ = logging.getLogger('flathunt')
     URL_PATTERN = re.compile(r'https://www\.immobilienscout24\.de')
-    RESULT_LIMIT = 1
+    RESULT_LIMIT = 50
 
     def __init__(self):
         logging.getLogger("requests").setLevel(logging.WARNING)
+        self.id_watch = IdMaintainer('processed_ids.db' )
 
     def get_results(self, search_url, max_pages=None):
         """Loads the exposes from the ImmoScout site, starting at the provided URL"""
@@ -130,7 +132,7 @@ class CrawlImmobilienscout(Crawler):
                     image = image_tag["data-lazy-src"]
             else:
                 image = None
-            image_urls, total_price, free_from = self.extract_details(expose_urls[idx])
+            image_urls, total_price, free_from = self.extract_details(expose_ids[idx],expose_urls[idx])
             details = {
                 'id': expose_ids[idx],
                 'url': expose_urls[idx],
@@ -167,20 +169,28 @@ class CrawlImmobilienscout(Crawler):
         # self.__log__.info('extracted: %d', entries)
         return entries
 
-    def extract_details(self, url):
-        self.__log__.info(f"searching {url}")
-        # ipdb.set_trace()
-        image_urls = []
-        soup = self.get_page(url)
-        image_tags = soup.find_all(lambda e: e.has_attr('class') and 'sp-image' in e['class'])
-        for t in image_tags:
-            try:
-                image_url = t['data-src'].split("/ORIG")[0]
-                image_urls.append(image_url)
-            except:
-                self.__log__.debug("cant get the image url")
-        total_price_tag = soup.find(lambda e: e.has_attr('class') and 'is24qa-gesamtmiete' in e['class'])
-        total_price = total_price_tag.text.strip()
-        
-        free_from = soup.find(lambda e: e.has_attr('class') and 'is24qa-bezugsfrei-ab' in e['class']).text.strip()
-        return image_urls, total_price, free_from
+    def extract_details(self, id, url):
+        db_entry = self.id_watch.get_expose_by_id(id)
+        if db_entry is None:
+            self.__log__.info(f"searching {url}")
+            # ipdb.set_trace()
+            image_urls = []
+            soup = self.get_page(url)
+            image_tags = soup.find_all(lambda e: e.has_attr('class') and 'sp-image' in e['class'])
+            for t in image_tags:
+                try:
+                    image_url = t['data-src'].split("/ORIG")[0]
+                    image_urls.append(image_url)
+                except:
+                    self.__log__.debug("cant get the image url")
+            total_price_tag = soup.find(lambda e: e.has_attr('class') and 'is24qa-gesamtmiete' in e['class'])
+            total_price = "-"
+            if total_price_tag is not None:
+                total_price = total_price_tag.text.strip()
+            free_from = "-"
+            free_from_tag = soup.find(lambda e: e.has_attr('class') and 'is24qa-bezugsfrei-ab' in e['class'])
+            if free_from_tag is not None:
+                free_from = free_from_tag.text.strip()
+            return image_urls, total_price, free_from
+        else:
+            return db_entry["photos"], db_entry["total_price"], db_entry["free_from"]

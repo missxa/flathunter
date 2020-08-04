@@ -24,7 +24,7 @@ class SenderTelegram(Processor):
     """Expose processor that sends Telegram messages"""
     __log__ = logging.getLogger('flathunt')
 
-    def __init__(self, config, receivers=None):
+    def __init__(self, config, telegram_updater, receivers=None):
         self.config = config
         self.bot_token = self.config.get('telegram', dict()).get('bot_token', '')
         if receivers is None:
@@ -34,11 +34,16 @@ class SenderTelegram(Processor):
 
         self.id_watch = IdMaintainer('%s/processed_ids.db' % config.database_location())
 
-        self.updater = Updater(token=self.bot_token, use_context=True)
-        self.updater.dispatcher.add_handler(CallbackQueryHandler(self.button))
-        self.updater.dispatcher.add_error_handler(self.error)
-        self.updater.start_polling()
+        self.updater = telegram_updater# Updater(token=self.bot_token, use_context=True)
+        # self.updater.start_polling()
+        self.handler = CallbackQueryHandler(self.button)
+        self.updater.dispatcher.add_handler(self.handler)
+        
+        
         self.bot = self.updater.bot
+
+    def get_handler(self):
+        return self.handler
 
     def button(self, update, context):
         query = update.callback_query
@@ -71,14 +76,6 @@ class SenderTelegram(Processor):
             self.bot.answer_callback_query(update.callback_query.id, text='Sorry, I dont have pics for this one')
 
         # elif query.data[0] == Action.APPLY:
-
-
-    def error(self, update, context):
-        """
-        Log Errors caused by Updates.
-        """
-        self.__log__.error(f'Update {update} caused error {context.error}')
-
 
     def process_expose(self, expose):
         """Send a message to a user describing the expose"""

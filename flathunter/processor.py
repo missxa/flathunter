@@ -16,9 +16,9 @@ class ProcessorChainBuilder:
         self.processors = []
         self.config = config
 
-    def send_telegram_messages(self, receivers=None):
+    def send_telegram_messages(self, telegram_updater, receivers=None):
         """Add processor that sends Telegram messages for exposes"""
-        self.processors.append(SenderTelegram(self.config, receivers=receivers))
+        self.processors.append(SenderTelegram(self.config, telegram_updater=telegram_updater, receivers=receivers))
         return self
 
     def resolve_addresses(self):
@@ -68,6 +68,12 @@ class ProcessorChain:
         """Process the sequences of exposes with the processor chain"""
         return reduce((lambda exposes, processor: processor.process_exposes(exposes)),
                       self.processors, exposes)
+
+    def get_telegram_handler(self):
+        for p in self.processors:
+            if isinstance(p, SenderTelegram):
+                return p.get_handler()
+        return None
 
     @staticmethod
     def builder(config):

@@ -103,8 +103,10 @@ class IdMaintainer:
                      WHERE id == ?', (id,))
         # import ipdb; ipdb.set_trace()
         res = cur.fetchall()
-        assert len(res) == 1
-        return json.loads(res[0][0])
+        if len(res) == 1:
+            return json.loads(res[0][0])
+        else:
+            return None
         
 
     def get_exposes_since(self, min_datetime):
